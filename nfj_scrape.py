@@ -33,7 +33,7 @@ HEADERS = {
 }
 
 
-def scrape(pageSize: int):
+def scrape_json(pageSize: int):
     payload = get_payload(pageSize)
     query_params = get_query_params(pageSize)
     url = get_url(query_params)
