@@ -2,8 +2,6 @@ import requests
 import urllib.parse
 import time
 
-# HOW SHOULD PROJECT STRUCTURE LOOK, WHERE SHOULD BE INITIAL SCRAPE
-# HOW CAN I USE THIS IN ANOTHER FILE
 BASE_URL = "https://nofluffjobs.com/api/search/posting"
 
 CATEGORIES = [
@@ -32,13 +30,13 @@ HEADERS = {
     "content-type": "application/infiniteSearch+json",
 }
 
-
 def scrape_json(pageSize: int):
     payload = get_payload(pageSize)
     query_params = get_query_params(pageSize)
     url = get_url(query_params)
 
     print("started scraping")
+
     start = time.time()
 
     response = requests.post(url, headers=HEADERS, json=payload)
@@ -49,12 +47,13 @@ def scrape_json(pageSize: int):
     unix_timestamp = int(time.time())
     end = time.time()
     took = end - start
+
     print(f"scaping went successfull")
     print(f"took {took:.2f}")
     print(data)
 
 
-def get_url(query_params: dict):
+def get_url(query_params: dict) -> str:
     url = f"{BASE_URL}?{urllib.parse.urlencode(query_params)}"
 
     return url
@@ -84,3 +83,5 @@ def get_query_params(pageSize: int) -> dict:
     }
 
     return query_params
+
+scrape_json(5)
