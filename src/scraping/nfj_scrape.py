@@ -30,7 +30,7 @@ HEADERS = {
     "content-type": "application/infiniteSearch+json",
 }
 
-def scrape_json(pageSize: int):
+def scrape_json(pageSize: int) -> str:
     payload = get_payload(pageSize)
     query_params = get_query_params(pageSize)
     url = get_url(query_params)
@@ -50,7 +50,7 @@ def scrape_json(pageSize: int):
 
     print(f"scaping went successfull")
     print(f"took {took:.2f}")
-    print(data)
+    return data
 
 
 def get_url(query_params: dict) -> str:
