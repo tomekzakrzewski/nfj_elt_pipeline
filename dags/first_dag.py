@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from airflow.decorators import dag, task
 from src.scraping.nfj_scrape import scrape_json
+from src.utils.gcp_utils import create_gcs_bucket
 
 
 default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes=2)}
@@ -15,17 +16,23 @@ default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes
 
 def initial_scrape_data_ingestion():
 
-    @task()
-    def initial_scrape_json():
-        json_data = scrape_json(2)
-        return json_data
+    # @task()
+    # def initial_scrape_json():
+    #     json_data = scrape_json(2)
+    #     return json_data
+
+    # @task()
+    # def print_data(data):
+    #     print(data)
 
     @task()
-    def print_data(data):
-        print(data)
+    def create_bucket(bucket_name):
+        create_gcs_bucket(bucket_name)
 
-    json_data = initial_scrape_json()
-    print_data(data=json_data)
+
+    # json_data = initial_scrape_json()
+    # print_data(data=json_data)
+    create_bucket("atsdradflkjasldkfj123123huj")
 
 
 
