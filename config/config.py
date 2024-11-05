@@ -1,10 +1,9 @@
 import os
 
 GCP_CONFIG = {
-    'raw_bucket': os.getenv("GCP_BUCKET_NAME"),
-    'storage': os.getenv("GCP_STORAGE_CLASS"),
-    'location': os.getenv("europe-central2")
-
+    'raw_bucket': str(os.getenv("GCP_BUCKET_NAME")),
+    'storage': str(os.getenv("GCP_STORAGE_CLASS")),
+    'location': str(os.getenv("europe-central2"))
 }
 
     # GCP_BUCKET_NAME: "job_postings_raw_data"

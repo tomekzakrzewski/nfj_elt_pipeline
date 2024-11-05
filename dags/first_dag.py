@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from airflow.decorators import dag, task
+from config.config import GCP_CONFIG
 from src.scraping.nfj_scrape import scrape_json
 from src.utils.gcp_utils import create_gcs_bucket
 
@@ -9,12 +10,14 @@ default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes
 # tutaj scrape json bedzie zwracal wartosc
 # potem nastepny dag bedzie wrzucal do bucketa
 
-@dag(dag_id='initial_scrape_and_raw_ingest',
+@dag(
+    dag_id='infrastructure_setup',
     default_args=default_args,
-    start_date=datetime(2023, 5, 5),
-    schedule_interval='@daily')
+    start_date=datetime(2024, 11, 5),
+    schedule_interval='@once'
+)
 
-def initial_scrape_data_ingestion():
+def setup_infrastructure():
 
     # @task()
     # def initial_scrape_json():
@@ -27,16 +30,20 @@ def initial_scrape_data_ingestion():
 
     @task()
     def create_bucket():
-        create_gcs_bucket()
+        create_gcs_bucket(
+            bucket_name=GCP_CONFIG["raw_bucket"],
+            storage_class=GCP_CONFIG["storage"],
+            location=GCP_CONFIG["location"]
+        )
 
 
     # json_data = initial_scrape_json()
     # print_data(data=json_data)
-    create_bucket()
+    bucket = create_bucket()
 
 
 
-etl = initial_scrape_data_ingestion()
+dag = setup_infrastructure()
 # with DAG(
 #     default_args=default_args,
 #     dag_id="scrape_dag",

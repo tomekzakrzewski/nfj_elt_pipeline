@@ -1,15 +1,12 @@
 from google.cloud import storage
 from google.api_core import exceptions
-from config.config import GCP_CONFIG
 import logging
 
-def create_gcs_bucket() -> storage.Bucket:
-    bucket_name =GCP_CONFIG["raw_bucket"]
-    storage_class = GCP_CONFIG["storage"]
-    location = GCP_CONFIG["location"]
+def create_gcs_bucket(bucket_name: str, storage_class: str, location: str) -> storage.Bucket:
+
+    client = storage.Client()
 
     try:
-        client = storage.Client()
         bucket = client.bucket(bucket_name)
 
         bucket.storage_class = storage_class
