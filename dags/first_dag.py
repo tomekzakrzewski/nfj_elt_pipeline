@@ -26,13 +26,13 @@ def initial_scrape_data_ingestion():
     #     print(data)
 
     @task()
-    def create_bucket(bucket_name):
-        create_gcs_bucket(bucket_name)
+    def create_bucket():
+        create_gcs_bucket()
 
 
     # json_data = initial_scrape_json()
     # print_data(data=json_data)
-    create_bucket("atsdradflkjasldkfj123123huj")
+    create_bucket()
 
 
 
