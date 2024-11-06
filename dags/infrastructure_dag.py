@@ -16,7 +16,6 @@ default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes
     start_date=datetime(2024, 11, 5),
     schedule_interval='@once'
 )
-
 def setup_infrastructure():
 
     # @task()

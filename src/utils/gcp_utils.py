@@ -3,7 +3,6 @@ from google.api_core import exceptions
 import logging
 
 def create_gcs_bucket(bucket_name: str, storage_class: str, location: str) -> storage.Bucket:
-
     client = storage.Client()
 
     try:
