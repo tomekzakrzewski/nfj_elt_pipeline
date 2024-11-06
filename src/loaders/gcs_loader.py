@@ -3,7 +3,7 @@ from datetime import datetime
 import json
 import logging
 
-def upload_to_gcs(data: list[dict], bucket_name: str)
+def upload_to_gcs(data: list[dict], bucket_name: str):
     try:
         client = storage.Client()
         bucket = client.bucket(bucket_name)
