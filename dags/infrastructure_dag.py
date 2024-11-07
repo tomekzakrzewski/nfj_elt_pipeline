@@ -26,6 +26,4 @@ def setup_infrastructure():
 
     bucket_name = create_bucket()
 
-
-
 infra_dag = setup_infrastructure()

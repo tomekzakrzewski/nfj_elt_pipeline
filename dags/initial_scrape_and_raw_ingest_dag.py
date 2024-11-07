@@ -8,7 +8,6 @@ from src.utils.gcp_utils import create_gcs_bucket
 from src.loaders.gcs_loader import upload_to_gcs
 
 PAGESIZE = 10
-
 default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes=2)}
 
 @dag(
@@ -19,6 +18,7 @@ default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes
     schedule_interval='@once'
 )
 def initial_scrape_and_raw_data_load():
+
     wait_for_infrastructure = ExternalTaskSensor(
         task_id='wait_for_infra',
         external_dag_id='infrastructure_setup',
@@ -26,7 +26,6 @@ def initial_scrape_and_raw_data_load():
         mode='poke',
         allowed_states=[TaskInstanceState.SUCCESS]
     )
-
 
     @task(task_id='scrape_all_jobs')
     def scrape_all_jobs():
@@ -36,7 +35,6 @@ def initial_scrape_and_raw_data_load():
         except Exception as e:
             print("something went wrong")
             raise
-
 
     @task(task_id='raw_data_ingestion_to_gcs')
     def upload_to_bucket(data):
@@ -53,7 +51,5 @@ def initial_scrape_and_raw_data_load():
 
     data_uri = upload_to_bucket(scraped_data)
     scraped_data >> data_uri
-
-
 
 scrape_and_ingest_dag = initial_scrape_and_raw_data_load()
