@@ -1,17 +1,18 @@
 import pandas as pd
 
-def transform_raw_data(data: dict):
+def transform_raw_data(data: dict) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     df_jobs = normalize_and_rename_job_offers(data)
     df_jobs = extract_location(df_jobs)
     df_jobs = extract_seniority(df_jobs)
     df_jobs = delete_duplicates(df_jobs)
     df_jobs, df_requirements, df_jobs_and_requirements = transform_jobs_and_requirements(df_jobs)
+    return df_jobs, df_requirements, df_jobs_and_requirements
 
 
 def normalize_and_rename_job_offers(data: dict) -> pd.DataFrame:
     df_jobs = pd.json_normalize(
         data["postings"],
-        sep="-"
+        sep="_"
     )
     # Remove columns
     columns_to_keep = [
@@ -60,12 +61,12 @@ def extract_seniority(df_jobs: pd.DataFrame) -> pd.DataFrame:
 
     return df_jobs
 
-def delete_duplicates(df_jobs: pd.DataFrame) -> pd.DataFrame
+def delete_duplicates(df_jobs: pd.DataFrame) -> pd.DataFrame:
     df_jobs = df_jobs.drop_duplicates(subset=['reference'])
 
     return df_jobs
 
-def transform_jobs_and_requirements(df_jobs: pd.DataFrame):
+def transform_jobs_and_requirements(df_jobs: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     # Create requirements mapping
     requirements_list = []
     job_requirements_list = []
@@ -101,4 +102,4 @@ def transform_jobs_and_requirements(df_jobs: pd.DataFrame):
     # Drop tiles.values from jobs dataframe as we don't need it anymore
     df_jobs = df_jobs.drop('tiles_values', axis=1)
 
-    return df_jobs, df_requirements, df_job_requirements
+    return df_jobs, df_requirements, pd.DataFrame(df_job_requirements)
