@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 from airflow.decorators import dag, task
 from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.utils.state import TaskInstanceState
-from config.config import GCP_CONFIG
+from config.config import GCS_CONFIG
 from src.scraping.nfj_scrape import scrape_json
-from src.utils.gcp_utils import create_gcs_bucket
+from src.utils.gcs_utils import create_gcs_bucket
 from src.loaders.gcs_loader import upload_to_gcs
 
 PAGESIZE = 10
@@ -38,7 +38,7 @@ def initial_scrape_and_raw_data_load():
 
     @task(task_id='raw_data_ingestion_to_gcs')
     def upload_to_bucket(data):
-        bucket_name = GCP_CONFIG['raw_bucket']
+        bucket_name = GCS_CONFIG['raw_bucket']
         try:
             gcs_uri = upload_to_gcs(data, bucket_name)
             return gcs_uri
