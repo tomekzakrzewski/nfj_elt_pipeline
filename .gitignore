@@ -6,3 +6,4 @@ help.txt
 target/
 dbt_packages/
 logs/
+todo.md

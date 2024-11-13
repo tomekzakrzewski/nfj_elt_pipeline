@@ -1,0 +1,13 @@
+dbt_transforms:
+  outputs:
+    dev:
+      dataset: marts
+      job_execution_timeout_seconds: 300
+      job_retries: 1
+      location: europe-central2
+      method: service-account
+      priority: interactive
+      project: nfj-elt-project
+      threads: 1
+      type: bigquery
+      keyfile: /opt/airflow/config/nfj-elt-project-key.json

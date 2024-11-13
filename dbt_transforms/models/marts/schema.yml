@@ -1,0 +1,133 @@
+version: 2
+
+models:
+  - name: dim_companies
+    description: "Dimension table for companies"
+    columns:
+      - name: company_id
+        description: "Surrogate key for company dimension"
+        tests:
+          - unique
+          - not_null
+      - name: company_name
+        description: "Name of the company"
+        tests:
+          - not_null
+      - name: city
+        description: "City where company is located"
+
+  - name: dim_categories
+    description: "Dimension table for job categories"
+    columns:
+      - name: category_id
+        description: "Surrogate key for category dimension"
+        tests:
+          - unique
+          - not_null
+      - name: category
+        description: "Job category"
+        tests:
+          - not_null
+
+  - name: dim_seniority
+    description: "Dimension table for job seniority levels"
+    columns:
+      - name: seniority_id
+        description: "Surrogate key for seniority dimension"
+        tests:
+          - unique
+          - not_null
+      - name: seniority_level
+        description: "Job seniority level"
+        tests:
+          - not_null
+
+  - name: dim_salary_ranges
+    description: "Dimension table for salary ranges"
+    columns:
+      - name: salary_id
+        description: "Surrogate key for salary dimension"
+        tests:
+          - unique
+          - not_null
+      - name: salary_from
+        description: "Minimum salary amount"
+      - name: salary_to
+        description: "Maximum salary amount"
+      - name: salary_type
+        description: "Type of salary (monthly, yearly, etc.)"
+      - name: salary_currency
+        description: "Currency of the salary"
+        tests:
+          - accepted_values:
+              values: ["PLN", "EUR", "USD"]
+
+  - name: dim_requirements
+    description: "Dimension table for job requirements"
+    columns:
+      - name: requirement_id
+        description: "Unique identifier for requirement"
+        tests:
+          - unique
+          - not_null
+      - name: requirement_name
+        description: "Name of the requirement"
+        tests:
+          - not_null
+
+  - name: fct_jobs
+    description: "Fact table for job listings"
+    columns:
+      - name: job_id
+        description: "Primary key for job listings"
+        tests:
+          - unique
+          - not_null
+      - name: company_id
+        description: "Foreign key to companies dimension"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_companies')
+              field: company_id
+      - name: category_id
+        description: "Foreign key to categories dimension"
+        tests:
+          - relationships:
+              to: ref('dim_categories')
+              field: category_id
+      - name: salary_id
+        description: "Foreign key to salary ranges dimension"
+        tests:
+          - relationships:
+              to: ref('dim_salary_ranges')
+              field: salary_id
+      - name: title
+        description: "Job title"
+        tests:
+          - not_null
+      - name: reference
+        description: "Job reference number"
+
+  - name: fct_job_requirements
+    description: "Fact table linking jobs to requirements"
+    columns:
+      - name: job_id
+        description: "Foreign key to jobs"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fct_jobs')
+              field: job_id
+      - name: requirement_id
+        description: "Foreign key to requirements"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_requirements')
+              field: requirement_id
+    tests:
+      - unique:
+          columns:
+            - job_id
+            - requirement_id

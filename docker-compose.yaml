@@ -8,20 +8,25 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- apache-airflow-providers-google google-cloud-bigquery}
-    PYTHONPATH: "/opt/airflow/src:${PYTHONPATH}" # added pythonpath
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- apache-airflow-providers-google google-cloud-bigquery dbt-core astronomer-cosmos dbt-bigquery}
+    # PYTHONPATH: "/opt/airflow/src:${PYTHONPATH}" # added pythonpath
+    PYTHONPATH: "/opt/airflow:/opt/airflow/src:${PYTHONPATH:-}" # Updated PYTHONPATH
     GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/config/nfj-elt-project-key.json
     GCP_BUCKET_NAME: "job_postings_raw_data"
     GCP_STORAGE_CLASS: "STANDARD"
     GCP_LOCATION: "europe-central2"
     GCP_PROJECT_ID: "nfj-elt-project"
+    DBT_PROFILES_DIR: /opt/airflow/config
+    DBT_PROJECT_DIR: /opt/airflow/dbt_transforms
 
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
-    - ${AIRFLOW_PROJ_DIR:-.}/src:/opt/airflow/src # added pythonpath
+    - ${AIRFLOW_PROJ_DIR:-.}/src:/opt/airflow/src
+    - ${AIRFLOW_PROJ_DIR:-.}/dbt_transforms:/opt/airflow/dbt_transforms
+    - ${AIRFLOW_PROJ_DIR:-.}/setup.py:/opt/airflow/setup.py
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on: &airflow-common-depends-on
     postgres:
@@ -42,6 +47,18 @@ services:
       retries: 5
       start_period: 5s
     restart: always
+
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-bigquery:1.7.3
+    volumes:
+      - ${AIRFLOW_PROJ_DIR:-.}/dbt_transforms:/usr/app
+      - ${AIRFLOW_PROJ_DIR:-.}/config:/root/.dbt
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.dbt/nfj-elt-project-key.json
+      - GCP_PROJECT_ID=nfj-elt-project
+    working_dir: /usr/app
+    profiles:
+      - dbt
 
   airflow-webserver:
     <<: *airflow-common

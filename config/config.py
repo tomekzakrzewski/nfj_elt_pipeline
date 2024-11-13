@@ -7,7 +7,8 @@ GCS_CONFIG = {
 }
 
 GCP_CONFIG = {
-    'project_id': str(os.getenv("GCP_PROJECT_ID"))
+    'project_id': str(os.getenv("GCP_PROJECT_ID")),
+    'location': str(os.getenv("GCP_LOCATION"))
 }
 
     # GCP_BUCKET_NAME: "job_postings_raw_data"

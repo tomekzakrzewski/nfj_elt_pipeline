@@ -1,0 +1,30 @@
+version: 2
+
+sources:
+  - name: staging
+    database: nfj-elt-project
+    schema: staging
+    tables:
+      - name: stg_jobs
+        columns:
+          - name: job_id
+          - name: company_name
+          - name: city
+          - name: category
+          - name: seniority
+          - name: title
+          - name: reference
+          - name: salary_from
+          - name: salary_to
+          - name: salary_type
+          - name: salary_currency
+
+      - name: stg_requirements
+        columns:
+          - name: requirement_id
+          - name: requirement_name
+
+      - name: stg_job_requirements
+        columns:
+          - name: job_id
+          - name: requirement_id

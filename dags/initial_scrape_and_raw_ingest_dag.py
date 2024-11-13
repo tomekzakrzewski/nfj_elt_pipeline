@@ -22,9 +22,9 @@ def initial_scrape_and_raw_data_load():
     wait_for_infrastructure = ExternalTaskSensor(
         task_id='wait_for_infra',
         external_dag_id='infrastructure_setup',
-        external_task_id=None,
+        external_task_id='create_gc_bucket',
         mode='poke',
-        allowed_states=[TaskInstanceState.SUCCESS]
+        allowed_states=['success']
     )
 
     @task(task_id='scrape_all_jobs')
@@ -47,7 +47,7 @@ def initial_scrape_and_raw_data_load():
             raise
 
     scraped_data = scrape_all_jobs()
-    wait_for_infrastructure >> scraped_data
+    # wait_for_infrastructure >> scraped_data
 
     data_uri = upload_to_bucket(scraped_data)
     scraped_data >> data_uri

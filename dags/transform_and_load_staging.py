@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from airflow.decorators import dag, task
+from airflow.models.baseoperator import chain
+from cosmos import DbtTaskGroup, ProjectConfig, ProfileConfig
 from config.config import GCP_CONFIG
 from config.config import GCS_CONFIG
 from src.utils.gcs_utils import get_latest_blob
@@ -9,6 +11,7 @@ from src.loaders.bigquery_loader import load_raw_data_to_bigquery
 import json
 import pandas as pd
 from typing import cast, Any
+from airflow.operators.python import PythonOperator
 
 
 default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes=2)}
@@ -59,10 +62,72 @@ def transform_raw_load_staging():
         load_raw_data_to_bigquery(df_requirements, "requirements", project_id)
         load_raw_data_to_bigquery(df_jobs_requirements, "job_requirements", project_id)
 
+
+    dbt_config = ProjectConfig(
+        dbt_project_path="/opt/airflow/dbt_transforms",
+        models_relative_path="models",
+        project_name="dbt_transforms",
+        env_vars={
+            "DBT_PROFILES_DIR": "/opt/airflow/config",
+            "DBT_PROJECT_DIR": "/opt/airflow/dbt_transforms",
+            "GOOGLE_APPLICATION_CREDENTIALS": "/opt/airflow/config/nfj-elt-project-key.json"
+        }
+    )
+
+    profile_config = ProfileConfig(
+        profile_name="dbt_transforms",
+        target_name="dev",
+        profiles_yml_filepath="/opt/airflow/config/profiles.yml"
+    )
+
+    transform_marts = DbtTaskGroup(
+        group_id="transform_marts",
+        project_config=dbt_config,
+        profile_config=profile_config,
+        operator_args={
+            "select": [
+                'marts.dim_companies',
+                'marts.dim_categories',
+                'marts.dim_seniority',
+                'marts.dim_salary_ranges',
+                'marts.dim_requirements',
+                # Facts last
+                'marts.fct_jobs',
+                'marts.fct_job_requirements'
+            ]
+        }
+    )
+    # transform_marts = DbtTaskGroup(
+    #     group_id="transform_marts",
+    #     project_config=dbt_config,
+    #     profile_config=profile_config,
+    #     operator_args={
+    #         "select": [
+    #             # Dimensions first
+    #             'marts.dim_companies',
+    #             'marts.dim_categories',
+    #             'marts.dim_seniority',
+    #             'marts.dim_salary_ranges',
+    #             'marts.dim_requirements',
+    #             # Facts last
+    #             'marts.fct_jobs',
+    #             'marts.fct_job_requirements'
+    #         ]
+    #     }
+    # )
+
     # Define task dependencies
     # Define task dependencies with type casting
     raw_data = get_latest_raw_data()
     transformed_data = transform_data(cast(dict[str, Any], raw_data))
-    load_to_staging(cast(dict[str, dict], transformed_data))
+    staging_load = load_to_staging(cast(dict[str, dict], transformed_data))
+
+    chain(
+        raw_data,
+        transformed_data,
+        staging_load,
+        transform_marts
+    )
+
 # Create DAG instance
 transform_load = transform_raw_load_staging()
