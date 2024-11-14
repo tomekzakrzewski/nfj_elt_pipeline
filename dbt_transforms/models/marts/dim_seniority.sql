@@ -5,23 +5,26 @@
 ) }}
 
 WITH source AS (
+    -- Select distinct seniority levels from the staging table
     SELECT DISTINCT
-        seniority
+        seniority,
+        scraped_at
     FROM {{ source('staging', 'stg_jobs') }}
 ),
+
 final AS (
+    -- Generate a surrogate key for each distinct seniority level
     SELECT
         {{ dbt_utils.generate_surrogate_key(['seniority']) }} AS seniority_id,
-        seniority AS seniority_level
+        seniority AS seniority_level,
+        scraped_at
     FROM source
 )
 
--- Use MERGE to insert new records and avoid duplicates
-MERGE INTO {{ this }} AS target
-USING final AS source
-ON target.seniority_level = source.seniority_level
+SELECT *
+FROM final
 
--- Insert new records if they don't exist in the target table
-WHEN NOT MATCHED THEN
-  INSERT (seniority_id, seniority_level)
-  VALUES (source.seniority_id, source.seniority_level);
+{% if is_incremental() %}
+-- Filter out records that already exist in the target table based on seniority_id
+WHERE seniority_level NOT IN (SELECT seniority_level FROM {{ this }})
+{% endif %}

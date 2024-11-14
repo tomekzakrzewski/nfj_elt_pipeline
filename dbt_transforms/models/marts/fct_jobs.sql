@@ -24,11 +24,12 @@ final AS (
         s.salary_id,
         sen.seniority_id,
         j.title,
-        j.reference
+        j.reference,
+        j.scraped_at,
+        j.city
     FROM {{ source('staging', 'stg_jobs') }} j
     LEFT JOIN companies c
         ON j.company_name = c.company_name
-        AND j.city = c.city
     LEFT JOIN categories cat
         ON j.category = cat.category_name
     LEFT JOIN seniority sen
@@ -40,12 +41,10 @@ final AS (
         AND j.salary_currency = s.salary_currency
 )
 
--- Use MERGE to insert new records and avoid duplicates based on job_id and reference.
-MERGE INTO {{ this }} AS target
-USING final AS source
-ON target.job_id = source.job_id
+SELECT *
+FROM final
 
--- Insert new records if they don't exist in the target table.
-WHEN NOT MATCHED THEN
-  INSERT (job_id, company_id, category_id, salary_id, seniority_id, title, reference)
-  VALUES (source.job_id, source.company_id, source.category_id, source.salary_id, source.seniority_id, source.title, source.reference);
+{% if is_incremental() %}
+-- Only include new or updated records since the last run based on scraped_at.
+WHERE scraped_at > (SELECT MAX(scraped_at) FROM {{ this }})
+{% endif %}

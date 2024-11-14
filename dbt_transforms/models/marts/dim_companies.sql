@@ -9,23 +9,21 @@
 WITH source AS (
     SELECT DISTINCT
         company_name,
-        city
+        scraped_at
     FROM {{ source('staging', 'stg_jobs') }}
 ),
 final AS (
     SELECT
         {{ dbt_utils.generate_surrogate_key(['company_name']) }} as company_id,
         company_name,
-        city,
-        CURRENT_TIMESTAMP() as created_at
+        scraped_at
     FROM source
 )
 
--- Use MERGE to handle both inserts and updates
-MERGE INTO {{ this }} AS target
-USING final AS source
-ON target.company_id = source.company_id
+SELECT *
+FROM final
 
-WHEN NOT MATCHED THEN
-  INSERT (company_id, company_name, city, created_at)
-  VALUES (source.company_id, source.company_name, source.city, source.created_at);
+{% if is_incremental() %}
+-- Filter out records that already exist in the target table based on seniority_id
+WHERE company_name NOT IN (SELECT company_name FROM {{ this }})
+{% endif %}

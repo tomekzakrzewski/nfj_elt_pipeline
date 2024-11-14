@@ -13,8 +13,8 @@ models:
         description: "Name of the company"
         tests:
           - not_null
-      - name: city
-        description: "City where company is located"
+      - name: scraped_at
+        description: "Timestamp of scraped"
 
   - name: dim_categories
     description: "Dimension table for job categories"
@@ -28,6 +28,8 @@ models:
         description: "Job category"
         tests:
           - not_null
+      - name: scraped_at
+        description: "Timestamp of scraped"
 
   - name: dim_seniority
     description: "Dimension table for job seniority levels"
@@ -41,6 +43,8 @@ models:
         description: "Job seniority level"
         tests:
           - not_null
+      - name: scraped_at
+        description: "Timestamp of scraped"
 
   - name: dim_salary_ranges
     description: "Dimension table for salary ranges"
@@ -74,6 +78,8 @@ models:
         description: "Name of the requirement"
         tests:
           - not_null
+      - name: scraped_at
+        description: "Timestamp of scraped"
 
   - name: fct_jobs
     description: "Fact table for job listings"
@@ -108,6 +114,12 @@ models:
           - not_null
       - name: reference
         description: "Job reference number"
+      - name: scraped_at
+        description: "Timestamp of scraped"
+      - name: city
+        description: "City where company is located"
+        tests:
+          - not_null
 
   - name: fct_job_requirements
     description: "Fact table linking jobs to requirements"
@@ -126,6 +138,8 @@ models:
           - relationships:
               to: ref('dim_requirements')
               field: requirement_id
+      - name: scraped_at
+        description: "Timestamp of scraped"
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

@@ -8,16 +8,14 @@ WITH source AS (
     SELECT DISTINCT
         requirement_id,
         requirement_name,
-        CURRENT_TIMESTAMP() as created_at
+        scraped_at
     FROM {{ source('staging', 'stg_requirements') }}
 )
 
--- Use MERGE to insert new records and update existing ones
-MERGE INTO {{ this }} AS target
-USING source AS source
-ON target.requirement_name = source.requirement_name
+SELECT *
+FROM source
 
--- Insert new records if they don't exist in the target table
-WHEN NOT MATCHED THEN
-  INSERT (requirement_id, requirement_name, created_at)
-  VALUES (source.requirement_id, source.requirement_name, source.created_at);
+{% if is_incremental() %}
+-- Filter out records that already exist in the target table based on seniority_id
+WHERE requirement_name NOT IN (SELECT requirement_name FROM {{ this }})
+{% endif %}

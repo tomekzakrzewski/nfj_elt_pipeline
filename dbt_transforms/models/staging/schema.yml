@@ -18,13 +18,16 @@ sources:
           - name: salary_to
           - name: salary_type
           - name: salary_currency
+          - name: scraped_at
 
       - name: stg_requirements
         columns:
           - name: requirement_id
           - name: requirement_name
+          - name: scraped_at
 
       - name: stg_job_requirements
         columns:
           - name: job_id
           - name: requirement_id
+          - name: scraped_at

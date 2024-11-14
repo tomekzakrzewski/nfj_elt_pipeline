@@ -122,9 +122,20 @@ def transform_jobs_and_requirements(df_jobs: pd.DataFrame)-> tuple[pd.DataFrame,
     # Drop tiles_values from jobs dataframe
     df_jobs = df_jobs.drop('tiles_values', axis=1)
 
+    current_time = pd.Timestamp.now()
+    df_jobs = add_scraped_at_timestamp(df_jobs, current_time)
+    df_new_requirements = add_scraped_at_timestamp(df_new_requirements, current_time)
+    df_job_requirements = add_scraped_at_timestamp(df_job_requirements, current_time)
+
+
     return df_jobs, df_new_requirements, df_job_requirements
 
 
+def add_scraped_at_timestamp(df: pd.DataFrame, timestamp)-> pd.DataFrame:
+    current_time = pd.Timestamp.now()
+    df['scraped_at'] = current_time
+    df['scraped_at'] = df['scraped_at'].dt.strftime('%Y-%m-%d %H:%M:%S')
+    return df
 
 
 # def transform_jobs_and_requirements(df_jobs: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
