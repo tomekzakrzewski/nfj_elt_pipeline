@@ -24,7 +24,7 @@ models:
         tests:
           - unique
           - not_null
-      - name: category
+      - name: category_name
         description: "Job category"
         tests:
           - not_null
@@ -127,7 +127,7 @@ models:
               to: ref('dim_requirements')
               field: requirement_id
     tests:
-      - unique:
-          columns:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
             - job_id
             - requirement_id
