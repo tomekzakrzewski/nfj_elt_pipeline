@@ -7,7 +7,7 @@ from src.scraping.nfj_scrape import scrape_json
 from src.utils.gcs_utils import create_gcs_bucket
 from src.loaders.gcs_loader import upload_to_gcs
 
-PAGESIZE = 10
+PAGESIZE = 50
 default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes=2)}
 
 @dag(

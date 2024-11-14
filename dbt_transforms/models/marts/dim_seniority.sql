@@ -1,9 +1,8 @@
-{{
-  config(
+{{ config(
     materialized='incremental',
-    unique_key='seniority_id'
-  )
-}}
+    unique_key='seniority_id',
+    incremental_strategy='merge'
+) }}
 
 WITH source AS (
     SELECT DISTINCT
@@ -17,7 +16,12 @@ final AS (
     FROM source
 )
 
-SELECT * FROM final
-{% if is_incremental() %}
-    WHERE seniority_id NOT IN (SELECT seniority_id FROM {{ this }})
-{% endif %}
+-- Use MERGE to insert new records and avoid duplicates
+MERGE INTO {{ this }} AS target
+USING final AS source
+ON target.seniority_level = source.seniority_level
+
+-- Insert new records if they don't exist in the target table
+WHEN NOT MATCHED THEN
+  INSERT (seniority_id, seniority_level)
+  VALUES (source.seniority_id, source.seniority_level);

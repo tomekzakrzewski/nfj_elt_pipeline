@@ -1,17 +1,23 @@
-{{
-  config(
+{{ config(
     materialized='incremental',
-    unique_key=['job_id', 'requirement_id']
-  )
-}}
+    unique_key=['job_id', 'requirement_id'],
+    incremental_strategy='merge'
+) }}
 
-SELECT DISTINCT
-    new_data.job_id,
-    new_data.requirement_id
-FROM {{ source('staging', 'stg_job_requirements') }} AS new_data
-{% if is_incremental() %}
-LEFT JOIN {{ this }} AS existing_data
-ON new_data.job_id = existing_data.job_id
-AND new_data.requirement_id = existing_data.requirement_id
-WHERE existing_data.job_id IS NULL  -- Only select rows that don't exist in target
-{% endif %}
+WITH source AS (
+    SELECT DISTINCT
+        job_id,
+        requirement_id
+    FROM {{ source('staging', 'stg_job_requirements') }}
+)
+
+-- Use MERGE to insert new records and avoid duplicates
+MERGE INTO {{ this }} AS target
+USING source AS source
+ON target.job_id = source.job_id
+AND target.requirement_id = source.requirement_id
+
+-- Insert new records if they don't exist in the target table
+WHEN NOT MATCHED THEN
+  INSERT (job_id, requirement_id)
+  VALUES (source.job_id, source.requirement_id);

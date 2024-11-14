@@ -2,6 +2,7 @@
   config(
     materialized='incremental',
     unique_key='category_id'
+    incremental_strategy='merge'
   )
 }}
 
@@ -18,7 +19,11 @@ final AS (
     FROM source
 )
 
-SELECT * FROM final
-{% if is_incremental() %}
-WHERE category_id NOT IN (SELECT category_id FROM {{ this }})
-{% endif %}
+-- Use MERGE to handle both inserts and updates
+MERGE INTO {{ this }} AS target
+USING final AS source
+ON target.category_name = source.category_name
+
+WHEN NOT MATCHED THEN
+  INSERT (category_id, category_name, created_at)
+  VALUES (source.category_id, source.category_name, source.created_at);
