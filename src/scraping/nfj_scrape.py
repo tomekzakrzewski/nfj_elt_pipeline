@@ -83,5 +83,3 @@ def get_query_params(pageSize: int) -> dict:
     }
 
     return query_params
-
-scrape_json(5)

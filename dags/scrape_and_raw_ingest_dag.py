@@ -6,7 +6,8 @@ from src.utils.gcs_utils import create_gcs_bucket, check_if_bucket_exists
 from src.loaders.gcs_loader import upload_to_gcs
 from airflow.exceptions import AirflowException
 
-PAGESIZE = 50
+PAGESIZE_INITIAL = 1500
+PAGESIZE_DAILY = 50
 default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes=2)}
 
 @dag(
@@ -14,7 +15,8 @@ default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes
     description='Initial scrape and raw data ingestion',
     default_args=default_args,
     start_date=datetime(2024, 11, 5),
-    schedule_interval='@once'
+    schedule_interval='@daily',
+    catchup=False
 )
 def initial_scrape_and_raw_data_load():
     @task
@@ -29,13 +31,25 @@ def initial_scrape_and_raw_data_load():
         except Exception as e:
             raise AirflowException(f"Error checking {bucket_name}: {str(e)}")
 
+    @task
+    def determine_pagesize(**kwargs):
+        execution_date = kwargs['execution_date']
+        dag_start_date = kwargs['dag'].start_date
+        ## if first run, pagezise initial, else daily
+        if execution_date == dag_start_date:
+            return PAGESIZE_INITIAL
+        else:
+            return PAGESIZE_DAILY
+        # return PAGESIZE_INITIAL if execution_date == dag_start_date else PAGESIZE_DAILY
+
     @task(task_id='scrape_all_jobs')
-    def scrape_all_jobs():
+    def scrape_jobs(**kwargs):
+        pagesize = kwargs['ti'].xcom_pull(task_ids='determine_pagesize')
         try:
-            data = scrape_json(PAGESIZE)
+            data = scrape_json(pagesize)
             return data
         except Exception as e:
-            print("something went wrong")
+            print("Something went wrong")
             raise
 
     @task(task_id='raw_data_ingestion_to_gcs')
@@ -49,9 +63,9 @@ def initial_scrape_and_raw_data_load():
             raise
 
     bucket_exists = check_bucket_exists()
-    scraped_data = scrape_all_jobs()
-
-    bucket_exists >> scraped_data
+    pagesize = determine_pagesize()
+    scraped_data = scrape_jobs(op_kwargs={'ti': pagesize})
+    bucket_exists >> pagesize >> scraped_data
 
     data_uri = upload_to_bucket(scraped_data)
     scraped_data >> data_uri
