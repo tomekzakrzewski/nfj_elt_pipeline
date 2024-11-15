@@ -4,18 +4,21 @@
     incremental_strategy='merge'
 ) }}
 
-WITH source AS (
-    SELECT DISTINCT
+WITH source_data AS (
+    SELECT
         job_id,
         requirement_id,
-        scraped_at
+        MAX(scraped_at) AS scraped_at
     FROM {{ source('staging', 'stg_job_requirements') }}
+    GROUP BY job_id, requirement_id
 )
 
-SELECT *
-FROM source
+SELECT
+    job_id,
+    requirement_id,
+    scraped_at
+FROM source_data
 
 {% if is_incremental() %}
--- Only include new or updated records since the last run.
-WHERE scraped_at > (SELECT MAX(scraped_at) FROM {{ this }})
+WHERE scraped_at > (SELECT COALESCE(MAX(scraped_at), '1970-01-01') FROM {{ this }})
 {% endif %}

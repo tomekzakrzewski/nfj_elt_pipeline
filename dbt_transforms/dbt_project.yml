@@ -2,9 +2,8 @@ name: "dbt_transforms"
 version: "1.0.0"
 config-version: 2
 
-profile: "dbt_transforms"
+profile: "dbt_transforms" # Ensure this matches your profiles.yml
 
-# Add this line to change the packages installation path
 packages-install-path: "/home/airflow/dbt-packages" # Outside the mounted volume
 
 model-paths: ["models"]
@@ -21,4 +20,5 @@ clean-targets:
 models:
   dbt_transforms:
     marts:
-      +materialized: table
+      +materialized: table # Materialize models as tables
+      # Remove the +schema setting here to avoid double-appending "marts"

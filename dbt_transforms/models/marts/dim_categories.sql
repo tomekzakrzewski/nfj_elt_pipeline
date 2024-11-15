@@ -1,29 +1,23 @@
-{{
-  config(
+{{ config(
     materialized='incremental',
     unique_key='category_id',
     incremental_strategy='merge'
-  )
-}}
+) }}
 
-WITH source AS (
-    SELECT DISTINCT
-        category,
-        scraped_at
-    FROM {{ source('staging', 'stg_jobs') }}
-),
-final AS (
+WITH source_data AS (
     SELECT
-        {{ dbt_utils.generate_surrogate_key(['category']) }} as category_id,
-        category as category_name,
-        scraped_at
-    FROM source
+        category,
+        MAX(scraped_at) AS scraped_at
+    FROM {{ source('staging', 'stg_jobs') }}
+    GROUP BY category
 )
 
-SELECT *
-FROM final
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['category']) }} AS category_id,
+    category AS category_name,
+    scraped_at
+FROM source_data
 
 {% if is_incremental() %}
--- Filter out records that already exist in the target table based on seniority_id
-WHERE category_name NOT IN (SELECT category_name FROM {{ this }})
+WHERE scraped_at > (SELECT COALESCE(MAX(scraped_at), '1970-01-01') FROM {{ this }})
 {% endif %}

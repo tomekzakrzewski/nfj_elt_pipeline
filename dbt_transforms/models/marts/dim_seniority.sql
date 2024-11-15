@@ -4,27 +4,20 @@
     incremental_strategy='merge'
 ) }}
 
-WITH source AS (
-    -- Select distinct seniority levels from the staging table
-    SELECT DISTINCT
-        seniority,
-        scraped_at
-    FROM {{ source('staging', 'stg_jobs') }}
-),
-
-final AS (
-    -- Generate a surrogate key for each distinct seniority level
+WITH source_data AS (
     SELECT
-        {{ dbt_utils.generate_surrogate_key(['seniority']) }} AS seniority_id,
-        seniority AS seniority_level,
-        scraped_at
-    FROM source
+        seniority,
+        MAX(scraped_at) AS scraped_at
+    FROM {{ source('staging', 'stg_jobs') }}
+    GROUP BY seniority
 )
 
-SELECT *
-FROM final
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['seniority']) }} AS seniority_id,
+    seniority AS seniority_level,
+    scraped_at
+FROM source_data
 
 {% if is_incremental() %}
--- Filter out records that already exist in the target table based on seniority_id
-WHERE seniority_level NOT IN (SELECT seniority_level FROM {{ this }})
+WHERE scraped_at > (SELECT COALESCE(MAX(scraped_at), '1970-01-01') FROM {{ this }})
 {% endif %}

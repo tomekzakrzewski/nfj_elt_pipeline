@@ -1,29 +1,23 @@
-{{
-  config(
+{{ config(
     materialized='incremental',
     unique_key='company_id',
     incremental_strategy='merge'
-  )
-}}
+) }}
 
-WITH source AS (
-    SELECT DISTINCT
-        company_name,
-        scraped_at
-    FROM {{ source('staging', 'stg_jobs') }}
-),
-final AS (
+WITH source_data AS (
     SELECT
-        {{ dbt_utils.generate_surrogate_key(['company_name']) }} as company_id,
         company_name,
-        scraped_at
-    FROM source
+        MAX(scraped_at) AS scraped_at
+    FROM {{ source('staging', 'stg_jobs') }}
+    GROUP BY company_name
 )
 
-SELECT *
-FROM final
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['company_name']) }} AS company_id,
+    company_name,
+    scraped_at
+FROM source_data
 
 {% if is_incremental() %}
--- Filter out records that already exist in the target table based on seniority_id
-WHERE company_name NOT IN (SELECT company_name FROM {{ this }})
+WHERE scraped_at > (SELECT COALESCE(MAX(scraped_at), '1970-01-01') FROM {{ this }})
 {% endif %}

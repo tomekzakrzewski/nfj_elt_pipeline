@@ -77,12 +77,18 @@ def transform_jobs_and_requirements(df_jobs: pd.DataFrame)-> tuple[pd.DataFrame,
         SELECT requirement_id, requirement_name
         FROM `nfj-elt-project.marts.dim_requirements`
         """
+
         existing_requirements_df = pd.read_gbq(existing_requirements_query)
+
+        # Convert requirement_id to numeric if needed and handle any errors
+        existing_requirements_df['requirement_id'] = pd.to_numeric(existing_requirements_df['requirement_id'], errors='coerce')
+
         requirements_mapping = dict(zip(
             existing_requirements_df['requirement_name'],
             existing_requirements_df['requirement_id']
         ))
-        max_requirement_id = existing_requirements_df['requirement_id'].max()
+        max_requirement_id = int(existing_requirements_df['requirement_id'].max() or 0)
+
     except Exception as e:
         requirements_mapping = {}
         max_requirement_id = 0
