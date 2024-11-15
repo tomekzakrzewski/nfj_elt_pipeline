@@ -21,7 +21,8 @@ default_args = {"owner": "tomek", "retires": 5, "retry_delay": timedelta(minutes
     description='transform raw data and load into staging big query',
     default_args=default_args,
     start_date=datetime(2024, 11, 5),
-    schedule_interval='@once'
+    schedule_interval='@once',
+    catchup=False
 )
 
 def transform_raw_load_staging():

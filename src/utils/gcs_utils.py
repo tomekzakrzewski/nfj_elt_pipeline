@@ -42,3 +42,16 @@ def get_latest_blob(bucket_name: str) -> Blob:
     except Exception as e:
         logging.error(f"Error getting latest file from GCS: {str(e)}")
         raise
+
+def check_if_bucket_exists(bucket_name: str):
+    try:
+        client = storage.Client()
+        bucket = client.lookup_bucket(bucket_name)
+        if bucket == None:
+            logging.error(f"Bucket {bucket_name} does not exists")
+            return False
+        else:
+            logging.info(f"Bucket {bucket_name} exists")
+            return True
+    except Exception as e:
+        logging.error(f"An error occured while checking {bucket_name}: {str(e)}")
