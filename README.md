@@ -1,1 +1,1 @@
-![Pipeline Diagram](assets/diagram.png)
+![Pipeline Diagram](assets/diagram.jpg)
