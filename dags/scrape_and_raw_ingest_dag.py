@@ -40,6 +40,7 @@ def initial_scrape_and_raw_data_load():
     def determine_pagesize(**kwargs):
         execution_date = kwargs['execution_date']
         dag_start_date = kwargs['dag'].start_date
+
         if execution_date == dag_start_date:
             pagesize = PAGESIZE_INITIAL
         else:

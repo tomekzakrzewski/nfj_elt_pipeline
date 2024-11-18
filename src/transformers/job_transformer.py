@@ -129,4 +129,5 @@ def add_scraped_at_timestamp(df: pd.DataFrame, timestamp)-> pd.DataFrame:
     current_time = pd.Timestamp.now()
     df['scraped_at'] = current_time
     df['scraped_at'] = df['scraped_at'].dt.strftime('%Y-%m-%d %H:%M:%S')
+
     return df
