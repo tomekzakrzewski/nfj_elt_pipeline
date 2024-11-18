@@ -9,7 +9,6 @@ x-airflow-common: &airflow-common
     AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- apache-airflow-providers-google google-cloud-bigquery dbt-core astronomer-cosmos dbt-bigquery}
-    # PYTHONPATH: "/opt/airflow/src:${PYTHONPATH}" # added pythonpath
     PYTHONPATH: "/opt/airflow:/opt/airflow/src:${PYTHONPATH:-}" # Updated PYTHONPATH
     GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/config/nfj-elt-project-key.json
     GCP_BUCKET_NAME: "job_postings_raw_data"
