@@ -1,7 +1,6 @@
 # ELT Pipeline for Job Postings
 
 This project implements an end-to-end data pipeline to scrape job postings from a website, load the raw data into a Google Cloud Storage (GCS) bucket (data lake), clean and transform the data using Pandas, load the cleaned data into Google BigQuery (data warehouse) staging tables, manage and create fact and dimension tables using DBT. Eerything is orchestrated using Airflow.
-![Pipeline Diagram](assets/diagram.jpg)
 
 # Project overview
 
@@ -12,6 +11,10 @@ Data Cleaning & Transformation: Clean and transform the raw data using Pandas.
 Data Loading: Load the cleaned data into BigQuery.
 DBT: Use DBT to create tables in BigQuery for further analysis.
 Orchestration: Automate all steps using Apache Airflow for scheduling and monitoring.
+
+## Workflow Design
+
+![Pipeline Diagram](assets/diagram.jpg)
 
 ## Staging Tables
 
