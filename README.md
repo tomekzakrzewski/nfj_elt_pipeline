@@ -5,11 +5,17 @@ This project implements an end-to-end data pipeline to scrape job postings from 
 # Project overview
 
 The goal of this project is to automate the process of collecting job posting data from a website, transforming it for analysis, and storing it in a cloud-based data warehouse (BigQuery). The pipeline consists of the following steps:
+
 Data Scraping: Scheduled scraping job postings from a website using Python.
+
 Raw Data Storage: Store the raw scraped data in Google Cloud Storage (GCS).
+
 Data Cleaning & Transformation: Clean and transform the raw data using Pandas.
+
 Data Loading: Load the cleaned data into BigQuery.
+
 DBT: Use DBT to create tables in BigQuery for further analysis.
+
 Orchestration: Automate all steps using Apache Airflow for scheduling and monitoring.
 
 ## Workflow Design
