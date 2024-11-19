@@ -1,6 +1,6 @@
 # ELT Pipeline for Job Postings
 
-This project implements an end-to-end data pipeline to scrape job postings from a website, load the raw data into a Google Cloud Storage (GCS) bucket (data lake), clean and transform the data using Pandas, load the cleaned data into Google BigQuery (data warehouse) staging tables, manage and create fact and dimension tables using DBT. Eerything is orchestrated using Airflow.
+This project implements an end-to-end data pipeline to scrape job postings from a website, load the raw data into a Google Cloud Storage (GCS) bucket (data lake), clean and transform the data using Pandas, load the cleaned data into Google BigQuery (data warehouse) staging tables, manage and create fact and dimension tables using DBT. Eerything is orchestrated using Airflow. Create raports with Looker Studio.
 
 # Project overview
 
@@ -14,9 +14,11 @@ The goal of this project is to automate the process of collecting job posting da
 
 **Data Loading:** Load the cleaned data into BigQuery.
 
-**DBT:** Use DBT to create tables in BigQuery for further analysis.
+**DBT:** Use DBT to create tables(star schema) in BigQuery for further analysis, testing.
 
 **Orchestration:** Automate all steps using Apache Airflow for scheduling and monitoring.
+
+**Visualization:** Use Looker Studio for creating raports.
 
 ## Workflow Design
 
@@ -30,12 +32,19 @@ The goal of this project is to automate the process of collecting job posting da
 
 ![Fact Dimension Tables](assets/fact_dimension_tables.jpg)
 
+## Looker Studio raports example
+
+![Looker Studio Charts](assets/charts.jpg)
+
 ## Technologies used
 
-Python
-Airflow
-Pandas
-Google Cloud Platform
-Google Cloud Storage
-BigQuery
-DBT
+- Python
+- SQL
+- Airflow
+- Pandas
+- DBT
+- Google Cloud BigQuery
+- Google Cloud Storage
+- Docker
+- Looker Studio
+
